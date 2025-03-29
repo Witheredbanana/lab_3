@@ -1,14 +1,18 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from functools import wraps
+from datetime import timedelta
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # В реальном приложении используйте безопасный секретный ключ
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)  # Срок жизни постоянной сессии
+app.config['REMEMBER_COOKIE_DURATION'] = timedelta(days=7)  # Срок жизни remember cookie
 
 # Настройка Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+login_manager.remember_cookie_duration = timedelta(days=7)  # Срок жизни remember cookie для Flask-Login
 
 # Простой класс пользователя
 class User(UserMixin):
@@ -49,7 +53,7 @@ def login():
         remember = request.form.get('remember') == 'on'
         
         if username == 'user' and password == 'qwerty':
-            login_user(user, remember=remember)
+            login_user(user, remember=remember, duration=timedelta(days=7) if remember else None)
             flash('Вы успешно вошли в систему!')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('index'))
